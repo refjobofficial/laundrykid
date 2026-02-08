@@ -1,31 +1,35 @@
-# Stage 1: Build the Spring Boot application
-# Uses a JDK image from Eclipse Temurin for compilation.
-FROM eclipse-temurin:21-jdk AS builder
+# --------------------------------------------------
+# Stage 1: Build the Spring Boot application (Maven)
+# --------------------------------------------------
+FROM maven:3.9-eclipse-temurin-21 AS builder
 
-# Set the working directory inside the container for the build stage.
+# Set working directory
 WORKDIR /app
-# Copy the Gradle wrapper and its directory.
-# This allows you to use the Gradle wrapper (gradlew) inside the container.
-COPY gradlew .
-COPY gradle gradle
-# Copy the build configuration files.
-# build.gradle: Main build script.
-# settings.gradle: Defines multi-project builds if applicable.
-COPY build.gradle settings.gradle .
-# Copy the source code.
-# The `src` directory contains your Java source files, resources, etc.
+
+# Copy Maven configuration first (for dependency caching)
+COPY pom.xml .
+
+# Download dependencies (cached layer)
+RUN mvn dependency:go-offline -B
+
+# Copy source code
 COPY src src
-# Make the Gradle wrapper script executable.
-RUN chmod +x gradlew
 
-RUN ./gradlew bootJar -x test
+# Build the Spring Boot JAR (skip tests for faster build)
+RUN mvn clean package -DskipTests
 
-FROM eclipse-temurin:21-jdk
+# --------------------------------------------------
+# Stage 2: Runtime (lighter image)
+# --------------------------------------------------
+FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-COPY --from=builder /app/build/libs//laundry-0.0.1-SNAPSHOT.jar app.jar
+# Copy the built JAR from builder stage
+COPY --from=builder /app/target/laundry-0.0.1-SNAPSHOT.jar app.jar
 
+# Expose Spring Boot port
 EXPOSE 8080
 
-CMD [ "java", "-jar", "app.jar" ]
+# Run the application
+ENTRYPOINT ["java", "-jar", "app.jar"]
