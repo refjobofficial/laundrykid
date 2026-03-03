@@ -4,7 +4,6 @@ import com.limnstage.laundry.DTO.OrderMapper;
 import com.limnstage.laundry.DTO.OrderResponseDTO;
 import com.limnstage.laundry.Repository.OrdersRepository;
 import com.limnstage.laundry.model.Orders;
-import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,12 +24,10 @@ public class OrderController {
     public ResponseEntity<?> createOrder(@RequestBody Orders order) {
         try {
             System.out.println("ORDER RECEIVED = " + order);
-
             Orders savedOrder = ordersRepository.save(order);
             return ResponseEntity.status(HttpStatus.CREATED).body(savedOrder);
-
         } catch (Exception e) {
-            e.printStackTrace(); // 🔥 THIS WILL TELL THE TRUTH
+            e.printStackTrace();
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(
@@ -47,7 +44,7 @@ public class OrderController {
     @GetMapping("/v1/all-orders/{uid}")
     public ResponseEntity<?> getOrdersByUserId(@PathVariable String uid) {
 
-        List<Orders> orders = ordersRepository.findByUid(Integer.parseInt(uid));
+        List<Orders> orders = ordersRepository.findByUidOrderByIdDesc(Integer.parseInt(uid));
         List<OrderResponseDTO> response =
                 orders.stream()
                         .map(OrderMapper::toDto)
@@ -80,6 +77,8 @@ public class OrderController {
                 .status(HttpStatus.NO_CONTENT) // 204
                 .build();
     }
+
+
 
 
 }

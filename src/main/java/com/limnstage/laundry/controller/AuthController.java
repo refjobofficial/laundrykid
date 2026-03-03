@@ -2,10 +2,12 @@ package com.limnstage.laundry.controller;
 
 
 import com.google.api.client.googleapis.auth.oauth2.GoogleIdToken;
+import com.limnstage.laundry.Exception.UnauthorizedException;
 import com.limnstage.laundry.security.JwtUtil;
 import com.limnstage.laundry.services.AuthService;
 import com.limnstage.laundry.services.GoogleTokenVerifier;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,4 +55,32 @@ public class AuthController {
                     .body(Map.of("error", "Invalid Google token"));
         }
     }
+
+    @PostMapping("/deliveryUserLogin")
+    public ResponseEntity<?> deliveryUserGoogleLogin(
+            @RequestBody Map<String, String> body) {
+
+        String idToken = body.get("idToken");
+
+        if (idToken == null || idToken.isBlank()) {
+            return ResponseEntity.badRequest()
+                    .body(Map.of("error", "idToken is required"));
+        }
+
+        try {
+            return ResponseEntity.ok(
+                    authService.deliveryUserLoginWithGoogle(idToken)
+            );
+
+        } catch (UnauthorizedException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", e.getMessage()));
+
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("error", "Invalid Google token"));
+        }
+    }
+
+
 }
