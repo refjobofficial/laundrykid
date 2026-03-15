@@ -11,6 +11,8 @@ public class OrderMapper {
                 .pants(order.getPants())
                 .deliveryStatus(order.getDeliveryStatus())
                 .orderDate(order.getOrderDate())
+                .phoneNo(order.getPhoneNo())
+                .address(order.getAddress())
                 .build();
     }
 }

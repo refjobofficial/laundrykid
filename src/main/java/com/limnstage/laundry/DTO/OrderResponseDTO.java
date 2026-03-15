@@ -14,4 +14,6 @@ public class OrderResponseDTO {
     private Integer pants;
     private String deliveryStatus;
     private OffsetDateTime orderDate;
+    private String phoneNo;
+    private String address;
 }

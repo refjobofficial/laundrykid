@@ -51,7 +51,7 @@ public class Orders {
     private Integer pants = 0;
 
     @Column(name = "delivery_status", nullable = false, length = 50)
-    private String deliveryStatus;
+    private String deliveryStatus = "NOT_DELIVERED";
 
     @Column(
             name = "order_date",
